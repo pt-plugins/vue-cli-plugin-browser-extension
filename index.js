@@ -25,10 +25,6 @@ module.exports = (api, options) => {
   const isProduction = process.env.NODE_ENV === 'production'
   const contentScriptEntries = Object.keys((componentOptions.contentScripts || {}).entries || {})
 
-  if (pluginOptions.modesToZip !== undefined) {
-    logger.warn('Deprecation Notice: setting NODE_ENV should be used in favored of options.modesToZip')
-  }
-
   const entry = {}
   if (componentOptions.background) {
     entry.background = [api.resolve(componentOptions.background.entry)]
@@ -79,7 +75,9 @@ module.exports = (api, options) => {
       webpackConfig.performance.assetFilter((assetFilename) =>
         performanceAssetFilterList.every((filter) => filter(assetFilename))
       )
+    }
 
+    if (pluginOptions.modesToZip) {
       let filename
       if (pluginOptions.artifactFilename) {
         filename = pluginOptions.artifactFilename({

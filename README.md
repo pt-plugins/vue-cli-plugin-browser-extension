@@ -1,6 +1,24 @@
 # vue-cli-plugin-browser-extension
 
-Browser extension development plugin for vue-cli 5.x (With Webpack 5)
+I fork from https://github.com/adambullmer/vue-cli-plugin-browser-extension, and add some new feature to it:
+
+1. Support vue-cli 5.x (With Webpack 5)
+2. Support Manifest V3 by accept pr from https://github.com/adambullmer/vue-cli-plugin-browser-extension/pull/131
+3. Remove dep `webpack-extension-reloader` (or `webpack-ext-reloader`) since it's likely dead and cause pollute global namespace (https://github.com/adambullmer/vue-cli-plugin-browser-extension/issues/134). So:
+   1. Option `extensionReloaderOptions` is no longer needed.
+   2. I advise you use [Extensions Reloader](https://chrome.google.com/webstore/detail/extensions-reloader/fimgfedafeadlieiabdeeaodndnlbhid) to reload unpacked extension
+4. No longer need `key.pem` and will not generate Key when call `vue add`
+   1. Notice: leave `key.pem` in zip is not safe. You should always sign it to build crx file.
+   2. option `generateSigningKey` when generator will not appear.
+5. Add back `modesToZip` options since sometimes I don't zip file when release production and a Github Action will zip those files.
+
+-----------------
+
+Origin README 
+
+# vue-cli-plugin-browser-extension
+
+Browser extension development plugin for vue-cli 3.x
 
 ## What does it do?
 
