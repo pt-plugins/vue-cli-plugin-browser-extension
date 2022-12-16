@@ -52,11 +52,5 @@ module.exports = [
 
       return componentMap
     }
-  },
-  {
-    name: 'generateSigningKey',
-    type: 'confirm',
-    message: 'Generate a new signing key (danger)?',
-    default: false
   }
 ]

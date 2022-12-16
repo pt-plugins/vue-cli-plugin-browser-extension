@@ -1,11 +1,9 @@
-const { generateKey } = require('../lib/signing-key')
 const { renderDomain, renderGitignore, renderTs } = require('../lib/render')
 
 module.exports = (api, _options) => {
   const browserExtension = Object.assign({}, _options)
   delete browserExtension.registry
   delete browserExtension.components
-  delete browserExtension.generateSigningKey
 
   const hasRouter = api.hasPlugin('router')
   const hasVuex = api.hasPlugin('vuex')
@@ -42,7 +40,7 @@ module.exports = (api, _options) => {
     pkg.eslintConfig = { env: { webextensions: true } }
   }
   if (hasTs) {
-    pkg.devDependencies['@types/firefox-webext-browser'] = '^67.0.2'
+    pkg.devDependencies['@types/webextension-polyfill'] = '^0.9.0'
   }
   api.extendPackage(pkg)
 
@@ -88,12 +86,6 @@ module.exports = (api, _options) => {
 
   if (options.components.devtools) {
     renderDomain({ title: 'Devtools', fileExt, options, api })
-  }
-
-  if (options.generateSigningKey === true) {
-    api.render((files) => {
-      files['key.pem'] = generateKey()
-    })
   }
 
   api.onCreateComplete(() => {

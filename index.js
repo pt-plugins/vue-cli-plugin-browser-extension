@@ -2,12 +2,10 @@ const logger = require('@vue/cli-shared-utils')
 const webpack = require('webpack')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const ZipPlugin = require('zip-webpack-plugin')
-const { keyExists } = require('./lib/signing-key')
 const manifestTransformer = require('./lib/manifest')
 const defaultOptions = {
   components: {},
   componentOptions: {},
-  extensionReloaderOptions: {},
   manifestSync: ['version'],
   manifestTransformer: null,
 }
@@ -25,8 +23,6 @@ module.exports = (api, options) => {
   const componentOptions = pluginOptions.componentOptions
   const packageJson = require(api.resolve('package.json'))
   const isProduction = process.env.NODE_ENV === 'production'
-  const keyFile = api.resolve('key.pem')
-  const hasKeyFile = keyExists(keyFile)
   const contentScriptEntries = Object.keys((componentOptions.contentScripts || {}).entries || {})
 
   if (pluginOptions.modesToZip !== undefined) {
@@ -84,18 +80,6 @@ module.exports = (api, options) => {
         performanceAssetFilterList.every((filter) => filter(assetFilename))
       )
 
-      if (hasKeyFile) {
-        webpackConfig.plugin('copy-signing-key').use(CopyWebpackPlugin, [
-          {
-            patterns: [{ from: keyFile, to: 'key.pem' }],
-          },
-        ])
-      } else {
-        logger.warn('No `key.pem` file detected. This is problematic only if you are publishing an existing extension')
-      }
-    }
-
-    if (isProduction) {
       let filename
       if (pluginOptions.artifactFilename) {
         filename = pluginOptions.artifactFilename({
