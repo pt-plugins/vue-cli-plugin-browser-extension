@@ -10,7 +10,9 @@ I fork from https://github.com/adambullmer/vue-cli-plugin-browser-extension, and
 4. No longer need `key.pem` and will not generate Key when call `vue add`
    1. Notice: leave `key.pem` in zip is not safe. You should always sign it to build crx file.
    2. option `generateSigningKey` when generator will not appear.
-5. Add back `modesToZip` options since sometimes I don't zip file when release production and a Github Action will zip those files.
+5. Add back pluginOptions `modesToZip`, since I may not need zip file when production build.
+
+However, since vue-cli is now in maintenance mode, I don't suggest to use this plugin.
 
 -----------------
 
