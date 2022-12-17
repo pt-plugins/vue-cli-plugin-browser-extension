@@ -30,11 +30,15 @@ I fork from https://github.com/adambullmer/vue-cli-plugin-browser-extension, and
    - option `generateSigningKey` when generator will not appear.
 5. Add back pluginOptions `modesToZip`, since I may not need zip file when production build.
 
-~~However, since vue-cli is now in [maintenance mode](https://github.com/vuejs/vue-cli/commit/7f3d51133635114528848b29e27084ee89d53e1c), I don't suggest to use this plugin.~~
+However, since vue-cli is now in [maintenance mode](https://github.com/vuejs/vue-cli/commit/7f3d51133635114528848b29e27084ee89d53e1c), I don't suggest to use this plugin.
+
+## Usage
+
+Replace `"vue-cli-plugin-browser-extension": "^0.25.1"` to `"vue-cli-plugin-browser-extension": "npm:@rhilip/vue-cli-plugin-browser-extension@^0.27.0",` in `package.json` and call `{npm,yarn,pnpm} install`
 
 -----------------
 
-Origin README 
+# Origin README 
 
 # vue-cli-plugin-browser-extension
 
