@@ -4,15 +4,33 @@ I fork from https://github.com/adambullmer/vue-cli-plugin-browser-extension, and
 
 1. Support vue-cli 5.x (With Webpack 5)
 2. Support Manifest V3 by accept pr from https://github.com/adambullmer/vue-cli-plugin-browser-extension/pull/131
-3. Remove dep `webpack-extension-reloader` (or `webpack-ext-reloader`) since it's likely dead and cause pollute global namespace (https://github.com/adambullmer/vue-cli-plugin-browser-extension/issues/134). So:
-   1. Option `extensionReloaderOptions` is no longer needed.
-   2. I advise you use [Extensions Reloader](https://chrome.google.com/webstore/detail/extensions-reloader/fimgfedafeadlieiabdeeaodndnlbhid) to reload unpacked extension
-4. No longer need `key.pem` and will not generate Key when call `vue add`
-   1. Notice: leave `key.pem` in zip is not safe. You should always sign it to build crx file.
-   2. option `generateSigningKey` when generator will not appear.
+   - Don't forget to change your `manifest.json` file to fit manifest v3 require, like `content_security_policy`
+   - In `vue.config.js` add `devtool: 'cheap-module-source-map'` to configureWebpack
+   - Since webpack always generate js code at folder `js/`, You may need a server worker wrapper at top folder.
+    ```js
+    // public/bg_wrapper.js
+
+    importScripts("js/background.js");
+    ```
+
+    ```json5
+    // src/manifest.json
+    {
+      "background": {
+        "service_worker": "bg_wrapper.js"
+      },
+    }
+    ```
+
+3. **[BC]** Remove dep `webpack-extension-reloader` (or `webpack-ext-reloader`) since it's likely dead and cause pollute global namespace (https://github.com/adambullmer/vue-cli-plugin-browser-extension/issues/134). So:
+   - Option `extensionReloaderOptions` is no longer needed.
+   - I advise you use [Extensions Reloader](https://chrome.google.com/webstore/detail/extensions-reloader/fimgfedafeadlieiabdeeaodndnlbhid) to reload unpacked extension
+4. **[BC]** No longer need `key.pem` and will not generate Key when call `vue add`
+   - Notice: leave `key.pem` in zip is not safe. You should always sign it when build crx file.
+   - option `generateSigningKey` when generator will not appear.
 5. Add back pluginOptions `modesToZip`, since I may not need zip file when production build.
 
-However, since vue-cli is now in maintenance mode, I don't suggest to use this plugin.
+~~However, since vue-cli is now in [maintenance mode](https://github.com/vuejs/vue-cli/commit/7f3d51133635114528848b29e27084ee89d53e1c), I don't suggest to use this plugin.~~
 
 -----------------
 
