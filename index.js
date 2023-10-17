@@ -1,11 +1,14 @@
 const logger = require('@vue/cli-shared-utils')
 const webpack = require('webpack')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
+const ExtensionReloader = require('webpack-ext-reloader')
 const ZipPlugin = require('zip-webpack-plugin')
+const { keyExists } = require('./lib/signing-key')
 const manifestTransformer = require('./lib/manifest')
 const defaultOptions = {
   components: {},
   componentOptions: {},
+  extensionReloaderOptions: {},
   manifestSync: ['version'],
   manifestTransformer: null,
 }
@@ -21,15 +24,25 @@ module.exports = (api, options) => {
     ? Object.assign(defaultOptions, options.pluginOptions.browserExtension)
     : defaultOptions
   const componentOptions = pluginOptions.componentOptions
+  const extensionReloaderOptions = pluginOptions.extensionReloaderOptions
   const packageJson = require(api.resolve('package.json'))
   const isProduction = process.env.NODE_ENV === 'production'
+  const keyFile = api.resolve('key.pem')
+  const hasKeyFile = keyExists(keyFile)
   const contentScriptEntries = Object.keys((componentOptions.contentScripts || {}).entries || {})
 
+  if (pluginOptions.modesToZip !== undefined) {
+    logger.warn('Deprecation Notice: setting NODE_ENV should be used in favored of options.modesToZip')
+  }
+
   const entry = {}
+  const entries = {}
   if (componentOptions.background) {
+    entries.background = 'background'
     entry.background = [api.resolve(componentOptions.background.entry)]
   }
   if (componentOptions.contentScripts) {
+    entries.contentScript = contentScriptEntries
     for (const name of contentScriptEntries) {
       let paths = componentOptions.contentScripts.entries[name]
       if (!Array.isArray(paths)) {
@@ -45,9 +58,10 @@ module.exports = (api, options) => {
     const isLegacyBundle = process.env.VUE_CLI_MODERN_MODE && !process.env.VUE_CLI_MODERN_BUILD
     // Ignore rewriting names for background and content scripts
     webpackConfig.output.filename(
-      (file) => 'js/[name]' + (isLegacyBundle ? `-legacy` : ``)
-        + (isProduction && options.filenameHashing && !userScripts.includes(file.chunk.name) ? '.[contenthash:8]' : '')
-        + '.js'
+      (file) =>
+        `js/[name]${isLegacyBundle ? `-legacy` : ``}${
+          isProduction && options.filenameHashing && !userScripts.includes(file.chunk.name) ? '.[contenthash:8]' : ''
+        }.js`
     )
     webpackConfig.merge({ entry })
 
@@ -75,9 +89,19 @@ module.exports = (api, options) => {
       webpackConfig.performance.assetFilter((assetFilename) =>
         performanceAssetFilterList.every((filter) => filter(assetFilename))
       )
+
+      if (hasKeyFile) {
+        webpackConfig.plugin('copy-signing-key').use(CopyWebpackPlugin, [
+          {
+            patterns: [{ from: keyFile, to: 'key.pem' }],
+          },
+        ])
+      } else {
+        logger.warn('No `key.pem` file detected. This is problematic only if you are publishing an existing extension')
+      }
     }
 
-    if (pluginOptions.modesToZip) {
+    if (isProduction) {
       let filename
       if (pluginOptions.artifactFilename) {
         filename = pluginOptions.artifactFilename({
@@ -94,6 +118,12 @@ module.exports = (api, options) => {
           filename: filename,
         },
       ])
+    }
+
+    // configure webpack-extension-reloader for automatic reloading of extension when content and background scripts change (not HMR)
+    // enabled only when webpack mode === 'development'
+    if (!isProduction) {
+      webpackConfig.plugin('extension-reloader').use(ExtensionReloader, [{ entries, ...extensionReloaderOptions }])
     }
 
     if (webpackConfig.plugins.has('copy')) {
